@@ -17,6 +17,10 @@ import IconButton from '@material-ui/core/IconButton';
 import MailIcon from '@material-ui/icons/Mail';
 import Drawer from '@material-ui/core/Drawer';
 import MenuIcon from '@material-ui/icons/Menu';
+import Snackbar from '@material-ui/core/Snackbar';
+
+import Problem from './Problem'
+
 
 import MDEditor,{commands} from '@uiw/react-md-editor';
 
@@ -85,12 +89,19 @@ const Home=props=>{
 
 
 
-
+  const [notification,setNotification]=useState(false)
+  const [message,setMessage]=useState('')
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profile,setProfile]=useState(null)
+  const [problem,setProblem]=useState(null)
+
+  const notify=message=>{
+    setMessage(message)
+    setNotification(true)
+  }
 
   useEffect(() => {
     firebase.firestore().collection('profile').doc(firebase.auth().currentUser.uid).onSnapshot(function(doc) {
@@ -136,12 +147,36 @@ const Home=props=>{
     </div>
   );
 
-  console.log(commands)
-
   const container = window !== undefined ? () => window().document.body : undefined;
+
+  const newProblem=()=>{
+    var problemData={
+      uid:firebase.auth().currentUser.uid,
+      infant:true
+    }
+    firebase.firestore().collection('problem').add(problemData).then(res=>{
+      problemData['id']=res.id
+      setProblem(problemData)
+      notify('New Problem Created as Draft')
+    })
+  }
+
+  const closeProblem=()=>{
+    setProblem(null)
+  }
 
   return (
     <div className={classes.root}>
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        open={notification}
+        onClose={()=>{setNotification(false)}}
+        autoHideDuration={4000}
+        message={message}
+      />
       <CssBaseline />
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar style={{backgroundColor:'#0090ff'}}>
@@ -193,32 +228,19 @@ const Home=props=>{
       <main className={classes.content}>
         <div className={classes.toolbar} />
 
-        <MDEditor
-          value={value}
-          onChange={setValue}
-          height='400'
-          commands={[
-            commands.title,
-            commands.bold,
-            commands.italic,
-            commands.strikethrough,
-            commands.hr,
-            commands.orderedListCommand,
-            commands.unorderedListCommand,
-            commands.code,
-            commands.image,
-            commands.link,
-            commands.quote,
-            commands.divider,
-            commands.codeEdit,
-            commands.codeLive,
-            commands.codePreview
-          ]}
-
-          />
-
-
-
+        {
+          problem==null?(
+            <Button
+              variant='outlined'
+              color='primary'
+              onClick={newProblem}
+              fullWidth>
+              + Create New Problem
+            </Button>
+          ):(
+            <Problem data={problem} close={closeProblem}/>
+          )
+        }
       </main>
     </div>
   );
