@@ -21,9 +21,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 
 import Problem from './Problem'
 
-
-import MDEditor,{commands} from '@uiw/react-md-editor';
-
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -190,7 +187,7 @@ const Home=props=>{
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            Interactive Problem Setter
+            Problem Setter Console
           </Typography>
         </Toolbar>
       </AppBar>
