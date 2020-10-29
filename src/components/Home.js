@@ -117,7 +117,7 @@ const Home=props=>{
  }
 
  const fetchProblems=()=>{
-   firebase.firestore().collection('problem').where('uid','==',firebase.auth().currentUser.uid).get().then(res=>{
+   firebase.firestore().collection('problem').where('uid','==',firebase.auth().currentUser.uid).orderBy('timestamp','desc').get().then(res=>{
      var arr=[]
      res.docs.map(doc=>{
        var data=doc.data()
@@ -295,6 +295,11 @@ const Home=props=>{
                                           </font>
                                         )
                                       }
+                                    </Typography><br/><br/>
+                                    <Typography gutterBottom variant="body2" component="body2">
+                                      <font color='#888888'>
+                                        {new Date(problem.timestamp).toLocaleString()}
+                                      </font>
                                     </Typography>
                                 </CardContent>
                               </CardActionArea>
