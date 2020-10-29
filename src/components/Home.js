@@ -18,6 +18,12 @@ import MailIcon from '@material-ui/icons/Mail';
 import Drawer from '@material-ui/core/Drawer';
 import MenuIcon from '@material-ui/icons/Menu';
 import Snackbar from '@material-ui/core/Snackbar';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import { deepOrange, deepPurple } from '@material-ui/core/colors';
 
 import Problem from './Problem'
 
@@ -26,6 +32,9 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+  },
+  root1:{
+    height:'100%'
   },
   paper: {
     padding: theme.spacing(2),
@@ -81,11 +90,6 @@ const useStyles = makeStyles((theme) => ({
 
 const Home=props=>{
 
-
-  const [value, setValue] = useState("**Hello world!!!**");
-
-
-
   const [notification,setNotification]=useState(false)
   const [message,setMessage]=useState('')
   const { window } = props;
@@ -94,6 +98,7 @@ const Home=props=>{
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profile,setProfile]=useState(null)
   const [problem,setProblem]=useState(null)
+  const [problems,setProblems]=useState(null)
 
   const notify=message=>{
     setMessage(message)
@@ -101,10 +106,27 @@ const Home=props=>{
   }
 
   useEffect(() => {
-    firebase.firestore().collection('profile').doc(firebase.auth().currentUser.uid).onSnapshot(function(doc) {
-        setProfile(doc.data())
-    });
+    fetchProfile()
+    fetchProblems()
  },[]);
+
+ const fetchProfile=()=>{
+   firebase.firestore().collection('profile').doc(firebase.auth().currentUser.uid).onSnapshot(function(doc) {
+       setProfile(doc.data())
+   });
+ }
+
+ const fetchProblems=()=>{
+   firebase.firestore().collection('problem').where('uid','==',firebase.auth().currentUser.uid).get().then(res=>{
+     var arr=[]
+     res.docs.map(doc=>{
+       var data=doc.data()
+       data['id']=doc.id
+       arr.push(data)
+     })
+     setProblems(arr)
+   })
+ }
 
  const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -149,12 +171,14 @@ const Home=props=>{
   const newProblem=()=>{
     var problemData={
       uid:firebase.auth().currentUser.uid,
-      infant:true
+      draft:true,
+      timestamp:Date.now()
     }
     firebase.firestore().collection('problem').add(problemData).then(res=>{
       problemData['id']=res.id
       setProblem(problemData)
       notify('New Problem Created as Draft')
+      fetchProblems()
     })
   }
 
@@ -227,15 +251,64 @@ const Home=props=>{
 
         {
           problem==null?(
-            <Button
-              variant='outlined'
-              color='primary'
-              onClick={newProblem}
-              fullWidth>
-              + Create New Problem
-            </Button>
+            <div>
+              <Button
+                variant='outlined'
+                color='primary'
+                onClick={newProblem}
+                fullWidth
+                style={{marginBottom:'10px'}}>
+                + Create New Problem
+              </Button>
+              {
+                problems==null?(
+                  <LinearProgress/>
+                ):(
+                  <Grid direction='row' alignItems="stretch" container spacing={1} className={classes.grid}>
+                    {
+                      problems.map((problem,ind)=>{
+                        return(
+                          <Grid style={{height:'100%'}} item xs={6} md={4}>
+                            <Card className={classes.root1} onClick={()=>{setProblem(problem)}}>
+                              <CardActionArea>
+                                <CardMedia
+                                  className={classes.media}
+                                  image={problem.logo}
+                                  title="Problem Logo"
+                                />
+                                <CardContent>
+                                    <Typography gutterBottom variant="h6" component="h6">
+                                      {problem.title}
+                                    </Typography>
+                                    <Typography gutterBottom variant="body2" component="body2">
+                                      ID : {problem.id}
+                                    </Typography><br/>
+                                    <Typography gutterBottom variant="body2" component="body2">
+                                      {
+                                        problem.draft?(
+                                          <font color='#999900'>
+                                            Draft
+                                          </font>
+                                        ):(
+                                          <font color='#00aa00'>
+                                            Submitted
+                                          </font>
+                                        )
+                                      }
+                                    </Typography>
+                                </CardContent>
+                              </CardActionArea>
+                            </Card>
+                          </Grid>
+                        )
+                      })
+                    }
+                  </Grid>
+                )
+              }
+            </div>
           ):(
-            <Problem data={problem} close={closeProblem}/>
+            <Problem data={problem} close={closeProblem} update={fetchProblems} notify={notify}/>
           )
         }
       </main>

@@ -1,12 +1,152 @@
-import React,{useState} from 'react'
+import React,{useState,useRef,useEffect} from 'react'
 import {Typography,Button,Divider,TextField,Select} from '@material-ui/core';
 import MDEditor,{commands} from '@uiw/react-md-editor';
 import AnsType from './AnsType'
+import * as firebase from 'firebase'
 
 const Problem=props=>{
 
+  const titleRef=useRef()
+  const logoRef=useRef()
+  const gradeRef=useRef()
+  const catRef=useRef()
+  const restrictionsRef=useRef()
+  const tagsRef=useRef()
+
+  const solRef=useRef()
+
   const [ansType,setAnsType]=useState('ansType' in props.data?props.data.ansType:0)
   const [interactiveType,setInteractiveType]=useState('interactiveType' in props.data?props.data.interactiveType:0)
+  const [difficulty,setDifficulty]=useState('difficulty' in props.data?props.data.difficulty:0)
+
+  useEffect(()=>{
+     window.scrollTo(0,0)
+  },[])
+
+  const validateString=string=>{
+    return !(string.trim().length==0)
+  }
+
+  const validateNumber=num=>{
+    return num!=NaN && num>0
+  }
+
+  const validate=()=>{
+    var title=titleRef.current.value
+    var logo=logoRef.current.value
+    var grade=parseInt(gradeRef.current.value)
+    var cat=catRef.current.value
+    var restrictions=restrictionsRef.current.value
+    var tags=tagsRef.current.value
+
+    if(!validateString(title)){
+      window.alert('error : title')
+      return false
+    }
+    if(!validateString(logo)){
+      window.alert('error : logo')
+      return false
+    }
+    if(!validateNumber(grade)){
+      window.alert('error : grade')
+      return false
+    }
+    if(!validateNumber(difficulty)){
+      window.alert('error : difficulty')
+      return false
+    }
+    if(!validateString(cat)){
+      window.alert('error : category')
+      return false
+    }
+    if(!validateString(mdStatement)){
+      window.alert('error : problem statement')
+      return false
+    }
+    if(!validateNumber(interactiveType)){
+      window.alert('error : interactive type')
+      return false
+    }
+    if(!validateString(mdExplanation)){
+      window.alert('error : explanation')
+      return false
+    }
+    if(!validateNumber(ansType)){
+      window.alert('error : answer type')
+      return false
+    }
+    if(!solRef.current.isValid()){
+      window.alert('error : solution')
+      return false
+    }
+    return true
+  }
+
+  const getData=()=>{
+    var title=titleRef.current.value
+    var logo=logoRef.current.value
+    var grade=parseInt(gradeRef.current.value)
+    var cat=catRef.current.value
+    var restrictions=restrictionsRef.current.value
+    var tags=tagsRef.current.value
+
+    var data={}
+
+    if(validateString(title))data['title']=title
+    if(validateString(logo))data['logo']=logo
+    if(validateNumber(grade))data['grade']=grade
+    if(validateNumber(difficulty))data['difficulty']=parseInt(difficulty)
+    if(validateString(cat))data['cat']=cat
+    if(validateString(mdDescription))data['description']=mdDescription
+    if(validateString(mdStatement))data['statement']=mdStatement
+    if(validateString(restrictions))data['restrictions']=parseDetails(restrictions)
+    if(validateString(tags))data['tags']=parseDetails(tags)
+
+    if(validateNumber(interactiveType)){
+      data['interactiveType']=parseInt(interactiveType)
+      if(validateString(mdExplanation))data['explanation']=mdExplanation
+      if(validateNumber(ansType))data['ansType']=ansType
+      var solData=solRef.current.getData()
+      Object.keys(solData).map(key=>{
+        data[key]=solData[key]
+      })
+    }
+
+    return data
+  }
+
+  const saveDraft=()=>{
+    var data=getData()
+    data['uid']=firebase.auth().currentUser.uid
+    data['draft']=true
+    data['timestamp']=Date.now()
+    firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
+      props.notify("Draft Updated")
+      props.update()
+    })
+  }
+
+  const submit=()=>{
+    if(validate()){
+      var data=getData()
+      data['uid']=firebase.auth().currentUser.uid
+      data['draft']=false
+      data['timestamp']=Date.now()
+      firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
+        props.notify("Problem Uploaded Successfully")
+        props.update()
+        props.close()
+      })
+    }
+  }
+
+  const deleteProblem=()=>{
+    firebase.firestore().collection('problem').doc(props.data.id).delete().then(res=>{
+      props.notify('Draft Deleted')
+      props.update()
+      props.close()
+    })
+  }
 
   const handleAnsType=event=>{
     setAnsType(event.target.value)
@@ -17,8 +157,30 @@ const Problem=props=>{
     setAnsType(0)
   }
 
+  const handleDifficulty=event=>{
+    setDifficulty(event.target.value)
+  }
+
   const close=()=>{
     props.close()
+  }
+
+  const detailsString=data=>{
+    var string=''
+    data.map(entry=>{
+      string+=entry+'|'
+    })
+    return string.substr(0,string.length-1)
+  }
+
+  const parseDetails=details=>{
+    var output=[]
+    var arr=details.split('|')
+    arr.map(item=>{
+      if(item.trim().length>0)
+        output.push(item.trim())
+    })
+    return output
   }
 
   const [mdDescription,setMdDescription]=useState('description' in props.data?props.data.description:'')
@@ -30,19 +192,24 @@ const Problem=props=>{
       <Button
         style={{width:'24%'}}
         variant='outlined'
-        color='primary'>
+        color='primary'
+        onClick={saveDraft}
+        disabled={!props.data.draft}>
         Save Draft
       </Button>
       <Button
         style={{width:'24%',marginLeft:'1%'}}
         variant='outlined'
+        onClick={submit}
         color='primary'>
         Submit
       </Button>
       <Button
         style={{width:'24%',marginLeft:'1%'}}
         variant='outlined'
-        color='secondary'>
+        color='secondary'
+        onClick={deleteProblem}
+        disabled={!props.data.draft}>
         Delete
       </Button>
       <Button
@@ -63,6 +230,8 @@ const Problem=props=>{
         <TextField
           variant='outlined'
           fullWidth
+          defaultValue={props.data.title}
+          inputRef={titleRef}
           label='Problem Title'
           />
           <Divider style={{marginTop:'10px',marginBottom:'10px'}}/>
@@ -70,6 +239,8 @@ const Problem=props=>{
               variant='outlined'
               style={{width:'25%'}}
               label='Logo'
+              inputRef={logoRef}
+              defaultValue={props.data.logo}
               />
               <TextField
                 variant='outlined'
@@ -77,8 +248,10 @@ const Problem=props=>{
                 type='number'
                 style={{marginLeft:'1%',width:'24%'}}
                 variant='outlined'
+                inputRef={gradeRef}
+                defaultValue={props.data.grade}
                 />
-            <Select variant='outlined' native style = {{width: '24%',marginLeft:'1%'}}>
+            <Select value={difficulty} onChange={handleDifficulty} variant='outlined' native style = {{width: '24%',marginLeft:'1%'}}>
                 <option value={0}>Difficulty</option>
                 <option value={1}>Easy</option>
                 <option value={2}>Medium</option>
@@ -89,6 +262,8 @@ const Problem=props=>{
               label='Categorization'
               style={{marginLeft:'1%',width:'24%'}}
               variant='outlined'
+              inputRef={catRef}
+              defaultValue={props.data.cat}
               />
           <Divider style={{marginTop:'10px'}}/>
           <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
@@ -156,6 +331,8 @@ const Problem=props=>{
                 multiline
                 rows={3}
                 variant='outlined'
+                inputRef={restrictionsRef}
+                defaultValue={'restrictions' in props.data?detailsString(props.data.restrictions):''}
                 />
 
                 <Divider style={{marginTop:'10px'}}/>
@@ -166,6 +343,8 @@ const Problem=props=>{
                   fullWidth
                   style={{marginTop:'10px'}}
                   variant='outlined'
+                  inputRef={tagsRef}
+                  defaultValue={'tags' in props.data?detailsString(props.data.tags):''}
                   />
 
                 <Divider style={{marginTop:'10px',marginBottom:'10px'}}/>
@@ -201,7 +380,7 @@ const Problem=props=>{
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Solution Arena:
                       </Typography>
-                      <AnsType ansType={ansType} data={props.data}/>
+                      <AnsType ref={solRef} ansType={ansType} data={props.data}/>
                       <Divider style={{marginTop:'10px'}}/>
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Explanation :

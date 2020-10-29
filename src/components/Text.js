@@ -1,26 +1,59 @@
 import React,{useState,createRef,useRef,useEffect,forwardRef, useImperativeHandle} from 'react'
 import {Button,TextField,Select} from '@material-ui/core';
 
+var answersObject={}
+
+function updateObject(n){
+  answersObject[n+'']=''
+}
+
 const Text=forwardRef((props,ref)=>{
 
-  useImperativeHandle(ref, () => ({
-    isValid(){
+    if('ansType' in props.data && props.data.ansType==2 && 'answer' in props.data)
+      props.data.answer.map((answer,index)=>{
+        answersObject[index+'']=answer
+      })
 
-    },
-    getData(){
+    useImperativeHandle(ref, () => ({
+      getData(){
+        var data={}
+        if(nAnswers>0){
+          var answers=[]
+          for(var i=0;i<nAnswers;i++)
+            if(answersObject[i+''].trim().length>0)
+              answers.push(answersObject[i+''])
+          data['answer']=answers
+        }
+        return data
+      },
+      isValid(){
+        if(nAnswers>0){
+          var answers=[]
+          for(var i=0;i<nAnswers;i++)
+            if(answersObject[i+''].trim().length>0)
+              answers.push(answersObject[i+''])
+          return answers.length>0
+        }else {
+          return false
+        }
+      }
+   }));
 
-    }
- }));
 
- const [nAnswers,setNAnswers]=useState('answer' in props.data?props.data.answer.length:0)
+ const [nAnswers,setNAnswers]=useState('answer' in props.data && props.data.ansType==2?props.data.answer.length:0)
 
  const addAnswer=props=>{
+   updateObject(nAnswers)
    setNAnswers(nAnswers+1)
  }
 
  const removeAnswer=props=>{
    if(nAnswers>0)
     setNAnswers(nAnswers-1)
+ }
+
+ const updateAnswers=event=>{
+   answersObject[event.target.id+'']=event.target.value
  }
 
   return(
@@ -47,8 +80,9 @@ const Text=forwardRef((props,ref)=>{
             <div>
               <TextField
                 variant='outlined'
-
-                id="standard-basic"
+                onChange={updateAnswers}
+                defaultValue={answersObject[i+'']}
+                id={i}
                 label={'Answer '+(i+1)}
                 fullWidth
                 style = {{marginTop:'10px'}} />

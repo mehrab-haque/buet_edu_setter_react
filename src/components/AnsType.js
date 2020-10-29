@@ -4,12 +4,14 @@ import Text from './Text'
 
 const AnsType=forwardRef((props,ref)=>{
 
+  const solRef=useRef()
+
   useImperativeHandle(ref, () => ({
-    isValid(){
-
-    },
     getData(){
-
+      return solRef.current.getData()
+    },
+    isValid(){
+      return solRef.current.isValid()
     }
  }));
 
@@ -17,10 +19,10 @@ const AnsType=forwardRef((props,ref)=>{
     <div>
       {
         props.ansType==1?(
-          <MCQ data={props.data}/>
+          <MCQ ref={solRef} data={props.data}/>
         ):(
           props.ansType==2?(
-            <Text data={props.data}/>
+            <Text ref={solRef} data={props.data}/>
           ):(
             <div/>
           )
