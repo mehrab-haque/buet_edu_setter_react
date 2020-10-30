@@ -4,6 +4,11 @@ import MDEditor,{commands} from '@uiw/react-md-editor';
 import AnsType from './AnsType'
 import * as firebase from 'firebase'
 
+const languages=[
+  'English',
+  'Bengali'
+]
+
 const Problem=props=>{
 
   const titleRef=useRef()
@@ -16,6 +21,7 @@ const Problem=props=>{
   const solRef=useRef()
 
   const [ansType,setAnsType]=useState('ansType' in props.data?props.data.ansType:0)
+  const [language,setLanguage]=useState('language' in props.data?props.data.language:0)
   const [interactiveType,setInteractiveType]=useState('interactiveType' in props.data?props.data.interactiveType:0)
   const [difficulty,setDifficulty]=useState('difficulty' in props.data?props.data.difficulty:0)
 
@@ -53,6 +59,10 @@ const Problem=props=>{
     }
     if(!validateNumber(difficulty)){
       window.alert('error : difficulty')
+      return false
+    }
+    if(!validateNumber(language)){
+      window.alert('error : language')
       return false
     }
     if(!validateString(cat)){
@@ -96,6 +106,7 @@ const Problem=props=>{
     if(validateString(logo))data['logo']=logo
     if(validateNumber(grade))data['grade']=grade
     if(validateNumber(difficulty))data['difficulty']=parseInt(difficulty)
+    if(validateNumber(language))data['language']=parseInt(language)
     if(validateString(cat))data['cat']=cat
     if(validateString(mdDescription))data['description']=mdDescription
     if(validateString(mdStatement))data['statement']=mdStatement
@@ -159,6 +170,10 @@ const Problem=props=>{
 
   const handleDifficulty=event=>{
     setDifficulty(event.target.value)
+  }
+
+  const handleLanguage=event=>{
+    setLanguage(event.target.value)
   }
 
   const close=()=>{
@@ -238,7 +253,7 @@ const Problem=props=>{
           <Divider style={{marginTop:'10px',marginBottom:'10px'}}/>
             <TextField
               variant='outlined'
-              style={{width:'25%'}}
+              style={{width:'20%'}}
               label='Logo'
               inputRef={logoRef}
               defaultValue={props.data.logo}
@@ -247,21 +262,31 @@ const Problem=props=>{
                 variant='outlined'
                 label='Grade'
                 type='number'
-                style={{marginLeft:'1%',width:'24%'}}
+                style={{marginLeft:'1%',width:'19%'}}
                 variant='outlined'
                 inputRef={gradeRef}
                 defaultValue={props.data.grade}
                 />
-            <Select value={difficulty} onChange={handleDifficulty} variant='outlined' native style = {{width: '24%',marginLeft:'1%'}}>
+            <Select value={difficulty} onChange={handleDifficulty} variant='outlined' native style = {{width: '19%',marginLeft:'1%'}}>
                 <option value={0}>Difficulty</option>
                 <option value={1}>Easy</option>
                 <option value={2}>Medium</option>
                 <option value={3}>Hard</option>
               </Select>
+            <Select value={language} onChange={handleLanguage} variant='outlined' native style = {{width: '19%',marginLeft:'1%'}}>
+                <option value={0}>Language</option>
+                {
+                  languages.map((lang,ind)=>{
+                    return(
+                      <option value={(ind+1)}>{lang}</option>
+                    )
+                  })
+                }
+              </Select>
             <TextField
               variant='outlined'
               label='Categorization'
-              style={{marginLeft:'1%',width:'24%'}}
+              style={{marginLeft:'1%',width:'19%'}}
               variant='outlined'
               inputRef={catRef}
               defaultValue={props.data.cat}
