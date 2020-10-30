@@ -122,7 +122,7 @@ const Problem=props=>{
     data['timestamp']=Date.now()
     firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
       props.notify("Draft Updated")
-      props.update()
+      //props.update()
     })
   }
 
@@ -134,7 +134,7 @@ const Problem=props=>{
       data['timestamp']=Date.now()
       firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
         props.notify("Problem Uploaded Successfully")
-        props.update()
+        //props.update()
         props.close()
       })
     }
@@ -143,7 +143,7 @@ const Problem=props=>{
   const deleteProblem=()=>{
     firebase.firestore().collection('problem').doc(props.data.id).delete().then(res=>{
       props.notify('Draft Deleted')
-      props.update()
+      //props.update()
       props.close()
     })
   }
@@ -194,13 +194,14 @@ const Problem=props=>{
         variant='outlined'
         color='primary'
         onClick={saveDraft}
-        disabled={!props.data.draft}>
+        disabled={!props.data.draft || props.data.uid!=firebase.auth().currentUser.uid}>
         Save Draft
       </Button>
       <Button
         style={{width:'24%',marginLeft:'1%'}}
         variant='outlined'
         onClick={submit}
+        disabled={props.data.uid!=firebase.auth().currentUser.uid}
         color='primary'>
         Submit
       </Button>
@@ -209,7 +210,7 @@ const Problem=props=>{
         variant='outlined'
         color='secondary'
         onClick={deleteProblem}
-        disabled={!props.data.draft}>
+        disabled={!props.data.draft || props.data.uid!=firebase.auth().currentUser.uid}>
         Delete
       </Button>
       <Button

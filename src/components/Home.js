@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect,useRef} from 'react'
 import * as firebase from 'firebase'
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
@@ -18,13 +18,19 @@ import MailIcon from '@material-ui/icons/Mail';
 import Drawer from '@material-ui/core/Drawer';
 import MenuIcon from '@material-ui/icons/Menu';
 import Snackbar from '@material-ui/core/Snackbar';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
 
+import ProblemsList from './ProblemsList'
 import Problem from './Problem'
 
 const drawerWidth = 240;
@@ -98,7 +104,12 @@ const Home=props=>{
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profile,setProfile]=useState(null)
   const [problem,setProblem]=useState(null)
-  const [problems,setProblems]=useState(null)
+  const [uid,setUid]=useState('self')
+  const [users,setUsers]=useState(null)
+
+  const [menu,setMenu]=useState(0)
+
+  const problemsListRef=useRef()
 
   const notify=message=>{
     setMessage(message)
@@ -107,8 +118,11 @@ const Home=props=>{
 
   useEffect(() => {
     fetchProfile()
-    fetchProblems()
  },[]);
+
+ useEffect(()=>{
+   if(menu==1)fetchUsers()
+ },[menu])
 
  const fetchProfile=()=>{
    firebase.firestore().collection('profile').doc(firebase.auth().currentUser.uid).onSnapshot(function(doc) {
@@ -116,21 +130,43 @@ const Home=props=>{
    });
  }
 
- const fetchProblems=()=>{
-   firebase.firestore().collection('problem').where('uid','==',firebase.auth().currentUser.uid).orderBy('timestamp','desc').get().then(res=>{
+ const fetchUsers=()=>{
+   firebase.firestore().collection('profile').get().then(res=>{
      var arr=[]
      res.docs.map(doc=>{
-       var data=doc.data()
-       data['id']=doc.id
-       arr.push(data)
+       if(doc.id!=firebase.auth().currentUser.uid){
+        var data=doc.data()
+        data['uid']=doc.id
+        arr.push(data)
+      }
      })
-     setProblems(arr)
+     setUsers(arr)
    })
  }
+
+ const fetchProblems=()=>{
+   problemsListRef.current.update()
+ }
+
+ const fetchProblemsWithUid=id=>{
+   if(problemsListRef.current)problemsListRef.current.updateWithUid(id)
+ }
+
+
 
  const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  const homepage=()=>{
+    if(problem!=null)
+      setProblem(null)
+    else{
+      setUid('self')
+      setMenu(0)
+      fetchProblemsWithUid(firebase.auth().currentUser.uid)
+    }
+  }
 
   const drawer = (
     <div>
@@ -147,6 +183,16 @@ const Home=props=>{
             </Typography>
 
             <Divider style={{marginTop:'20px'}}/>
+
+            <ListItem selected={menu==0 && uid=='self'} onClick={homepage} button>
+              <ListItemIcon><InboxIcon /> </ListItemIcon>
+              <ListItemText primary={'My Works'} />
+            </ListItem>
+
+            <ListItem selected={menu==1 || (menu==0 && uid!='self')} onClick={()=>{if(problem==null)setMenu(1);else setProblem(null)}} button>
+              <ListItemIcon><MailIcon /> </ListItemIcon>
+              <ListItemText primary={'Other Setters'} />
+            </ListItem>
 
 
 
@@ -178,7 +224,7 @@ const Home=props=>{
       problemData['id']=res.id
       setProblem(problemData)
       notify('New Problem Created as Draft')
-      fetchProblems()
+      //fetchProblems()
     })
   }
 
@@ -252,68 +298,74 @@ const Home=props=>{
         {
           problem==null?(
             <div>
-              <Button
-                variant='outlined'
-                color='primary'
-                onClick={newProblem}
-                fullWidth
-                style={{marginBottom:'10px'}}>
-                + Create New Problem
-              </Button>
+            {
+              menu==0 && uid=='self'?(
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={newProblem}
+                  fullWidth
+                  style={{marginBottom:'10px'}}>
+                  + Create New Problem
+                </Button>
+              ):(
+                <div/>
+              )
+            }
               {
-                problems==null?(
-                  <LinearProgress/>
+                menu==0?(
+                  <ProblemsList setMenu={setMenu} uid={uid} load={setProblem} ref={problemsListRef}/>
                 ):(
-                  <Grid direction='row' alignItems="stretch" container spacing={1} className={classes.grid}>
+                  <div>
+                    <ArrowBackIcon onClick={()=>{setMenu(0)}} style={{cursor:'pointer'}}/><br/><br/>
                     {
-                      problems.map((problem,ind)=>{
-                        return(
-                          <Grid style={{height:'100%'}} item xs={6} md={4}>
-                            <Card className={classes.root1} onClick={()=>{setProblem(problem)}}>
-                              <CardActionArea>
-                                <CardMedia
-                                  className={classes.media}
-                                  image={problem.logo}
-                                  title="Problem Logo"
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h6" component="h6">
-                                      {problem.title}
-                                    </Typography>
-                                    <Typography gutterBottom variant="body2" component="body2">
-                                      ID : {problem.id}
-                                    </Typography><br/>
-                                    <Typography gutterBottom variant="body2" component="body2">
-                                      {
-                                        problem.draft?(
-                                          <font color='#999900'>
-                                            Draft
-                                          </font>
-                                        ):(
-                                          <font color='#00aa00'>
-                                            Submitted
-                                          </font>
-                                        )
-                                      }
-                                    </Typography><br/><br/>
-                                    <Typography gutterBottom variant="body2" component="body2">
-                                      <font color='#888888'>
-                                        {new Date(problem.timestamp).toLocaleString()}
-                                      </font>
-                                    </Typography>
-                                </CardContent>
-                              </CardActionArea>
-                            </Card>
-                          </Grid>
-                        )
-                      })
+                      users==null?(
+                        <LinearProgress/>
+                      ):(
+                        <div>
+                          <Grid direction='row' alignItems="stretch" container spacing={1} className={classes.grid}>
+                            {
+                              users.map((user,ind)=>{
+                                return(
+                                  <Grid style={{height:'100%'}} item xs={6} md={4}>
+                                    <Card className={classes.root1} onClick={()=>{setUid(user.uid);setMenu(0);}}>
+                                      <CardActionArea>
+
+                                        <CardContent>
+                                            <Typography gutterBottom variant="h6" component="h6">
+                                              {user.name}
+                                            </Typography><br/>
+                                            <center>
+                                              <Avatar className={classes.orange} src={user.image} style={{width:'70px',height:'70px'}}>
+                                                {user.name.substr(0,1)}
+                                              </Avatar>
+                                            </center><br/><br/>
+                                            <Typography gutterBottom variant="body2" component="body2">
+                                              Joined On:
+                                            </Typography><br/>
+
+                                            <Typography gutterBottom variant="body2" component="body2">
+                                              <font color='#888888'>
+                                                {new Date(user.timestamp).toLocaleString()}
+                                              </font>
+                                            </Typography>
+                                        </CardContent>
+                                      </CardActionArea>
+                                    </Card>
+                                  </Grid>
+                              )
+                            })
+                          }
+                        </Grid>
+                      </div>
+                      )
                     }
-                  </Grid>
+                  </div>
                 )
               }
             </div>
           ):(
-            <Problem data={problem} close={closeProblem} update={fetchProblems} notify={notify}/>
+            <Problem data={problem} uid={uid} close={closeProblem} update={fetchProblems} notify={notify}/>
           )
         }
       </main>
