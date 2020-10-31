@@ -1,8 +1,9 @@
 import React,{useState,useRef,useEffect} from 'react'
 import {Typography,Button,Divider,TextField,Select} from '@material-ui/core';
 import MDEditor,{commands} from '@uiw/react-md-editor';
-import AnsType from './AnsType'
 import * as firebase from 'firebase'
+import AnsType from './AnsType'
+import Questionnaire from './Questionnaire'
 
 const languages=[
   'English',
@@ -378,6 +379,7 @@ const Problem=props=>{
                 <Select value={interactiveType} onChange={handleInteractiveType} variant='outlined' native style = {{width: '24%',marginLeft:'1%'}}>
                     <option value={0}>Specify Interactive Type</option>
                     <option value={1}>None</option>
+                    <option value={2}>Venn Diagram</option>
                   </Select>
                 {
                   interactiveType>0?(
@@ -395,6 +397,19 @@ const Problem=props=>{
                           <option value={3}>Interactive</option>
                         </Select>
                     )
+                  ):(
+                    <div/>
+                  )
+                }
+                {
+                  interactiveType>1?(
+                    <div>
+                      <Divider style={{marginTop:'10px',marginBottom:'10px'}}/>
+                      <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
+                        Questionnaire Arena:
+                      </Typography>
+                      <Questionnaire interactiveType={interactiveType}/>
+                    </div>
                   ):(
                     <div/>
                   )
