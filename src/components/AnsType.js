@@ -30,7 +30,7 @@ const AnsType=forwardRef((props,ref)=>{
             <Text ref={solRef} data={props.data}/>
           ):(
             props.ansType==3 && props.questionnaire!=null?(
-              <Exclusion key={Date.now()} ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==2?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
+              <Exclusion ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==2?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
             ):(
               <div/>
             )

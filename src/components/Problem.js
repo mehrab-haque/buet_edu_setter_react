@@ -441,7 +441,7 @@ const Problem=props=>{
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Solution Arena:
                       </Typography>
-                      <AnsType loaded={loaded} key={Date.now()} ref={solRef} questionnaire={questionnaireRef.current!=undefined?JSON.parse(JSON.stringify(questionnaireRef.current.getData())):null} ansType={ansType} data={props.data}/>
+                      <AnsType loaded={loaded} ref={solRef} questionnaire={questionnaireRef.current!=undefined?JSON.parse(JSON.stringify(questionnaireRef.current.getData())):null} ansType={ansType} data={props.data}/>
                       <Divider style={{marginTop:'10px'}}/>
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Explanation :
