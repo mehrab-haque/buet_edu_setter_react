@@ -19,7 +19,11 @@ const Problem=props=>{
   const restrictionsRef=useRef()
   const tagsRef=useRef()
 
+  const [loaded,setLoaded]=useState(false)
+
   const solRef=useRef()
+
+  const questionnaireRef=useRef()
 
   const [ansType,setAnsType]=useState('ansType' in props.data?props.data.ansType:0)
   const [language,setLanguage]=useState('language' in props.data?props.data.language:0)
@@ -28,6 +32,7 @@ const Problem=props=>{
 
   useEffect(()=>{
      window.scrollTo(0,0)
+     setLoaded(true)
   },[])
 
   const validateString=string=>{
@@ -118,10 +123,21 @@ const Problem=props=>{
       data['interactiveType']=parseInt(interactiveType)
       if(validateString(mdExplanation))data['explanation']=mdExplanation
       if(validateNumber(ansType))data['ansType']=ansType
-      var solData=solRef.current.getData()
-      Object.keys(solData).map(key=>{
-        data[key]=solData[key]
-      })
+      if(interactiveType>1){
+        if(questionnaireRef.current.getData()!=null)
+          data['questionnaire']=JSON.stringify(questionnaireRef.current.getData())
+      }
+      if(solRef.current!=undefined){
+        var solData=solRef.current.getData()
+        if(ansType<3){
+          Object.keys(solData).map(key=>{
+            data[key]=solData[key]
+          })
+        }else{
+          data['answer']=JSON.stringify(solData)
+        }
+
+      }
     }
 
     return data
@@ -161,7 +177,11 @@ const Problem=props=>{
   }
 
   const handleAnsType=event=>{
-    setAnsType(event.target.value)
+    var val=event.target.value
+    if(val==3 && questionnaireRef.current.getData()==null)
+      window.alert("Set the questionnaire properly")
+    else
+      setAnsType(event.target.value)
   }
 
   const handleInteractiveType=event=>{
@@ -379,7 +399,7 @@ const Problem=props=>{
                 <Select value={interactiveType} onChange={handleInteractiveType} variant='outlined' native style = {{width: '24%',marginLeft:'1%'}}>
                     <option value={0}>Specify Interactive Type</option>
                     <option value={1}>None</option>
-                    <option value={2}>Venn Diagram</option>
+                    <option value={2}>Exclusion Grid</option>
                   </Select>
                 {
                   interactiveType>0?(
@@ -408,7 +428,7 @@ const Problem=props=>{
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Questionnaire Arena:
                       </Typography>
-                      <Questionnaire interactiveType={interactiveType}/>
+                      <Questionnaire questionnaire={'questionnaire' in props.data?JSON.parse(props.data.questionnaire):null} ref={questionnaireRef} interactiveType={interactiveType}/>
                     </div>
                   ):(
                     <div/>
@@ -421,7 +441,7 @@ const Problem=props=>{
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Solution Arena:
                       </Typography>
-                      <AnsType ref={solRef} ansType={ansType} data={props.data}/>
+                      <AnsType loaded={loaded} key={Date.now()} ref={solRef} questionnaire={questionnaireRef.current!=undefined?JSON.parse(JSON.stringify(questionnaireRef.current.getData())):null} ansType={ansType} data={props.data}/>
                       <Divider style={{marginTop:'10px'}}/>
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Explanation :

@@ -1,0 +1,6 @@
+.bw{
+  filter: grayscale(100%);
+}
+.cl{
+  filter: grayscale(0%);
+}

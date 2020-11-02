@@ -1,11 +1,14 @@
 import React,{useState,createRef,useRef,useEffect,forwardRef, useImperativeHandle} from 'react'
 import VennQuestionnaire from './questionnaires/VennQuestionnaire'
+import ExclusionQuestionnaire from './questionnaires/ExclusionQuestionnaire'
 
-const Questionnaire=forwardRef((props,ref)=>{
+const Questionnaire=forwardRef((props,ref1)=>{
 
-  useImperativeHandle(ref, () => ({
+  var ref=useRef()
+
+  useImperativeHandle(ref1, () => ({
     getData(){
-
+      return ref.current.getData()
     },
     isValid(){
 
@@ -16,7 +19,7 @@ const Questionnaire=forwardRef((props,ref)=>{
     <div>
       {
         props.interactiveType==2?(
-          <VennQuestionnaire/>
+          <ExclusionQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
         ):(
           <div/>
         )
