@@ -30,10 +30,145 @@ import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
 
+import { Stage, Layer, Rect, Transformer ,Image} from 'react-konva'
+import useImage from 'use-image';
+
+
+
 import ProblemsList from './ProblemsList'
 import Problem from './Problem'
 
 const drawerWidth = 240;
+
+class URLImage extends React.Component {
+    state = {
+        image: null
+    };
+    componentDidMount() {
+        this.loadImage();
+    }
+    componentDidUpdate(oldProps) {
+        if (oldProps.src !== this.props.src) {
+            this.loadImage();
+        }
+    }
+    componentWillUnmount() {
+        this.image.removeEventListener('load', this.handleLoad);
+    }
+    loadImage() {
+        // save to "this" to remove "load" handler on unmount
+        this.image = new window.Image();
+        this.image.src = this.props.src;
+        this.image.addEventListener('load', this.handleLoad);
+    }
+    handleLoad = () => {
+        // after setState react-konva will update canvas and redraw the layer
+        // because "image" property is changed
+        this.setState({
+            image: this.image
+        });
+        // if you keep same image object during source updates
+        // you will have to update layer manually:
+        // this.imageNode.getLayer().batchDraw();
+    };
+    render() {
+        return (
+            <Image
+                draggable
+                x={this.props.x}
+                y={this.props.y}
+                image={this.state.image}
+                ref={node => {
+                    this.imageNode = node;
+                }}
+            />
+        );
+    }
+}
+
+const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
+    const shapeRef = React.useRef();
+    const trRef = React.useRef();
+
+    React.useEffect(() => {
+        if (isSelected) {
+            // we need to attach transformer manually
+            trRef.current.nodes([shapeRef.current]);
+            trRef.current.getLayer().batchDraw();
+        }
+    }, [isSelected]);
+
+    return (
+        <React.Fragment>
+            <URLImage src="https://satellitedatanasa.s3.ap-south-1.amazonaws.com/countryFlag/america.png"
+                onClick={onSelect}
+                onTap={onSelect}
+                ref={shapeRef}
+                {...shapeProps}
+                draggable
+                onDragEnd={(e) => {
+                    onChange({
+                        ...shapeProps,
+                        x: e.target.x(),
+                        y: e.target.y(),
+                    });
+                }}
+                onTransformEnd={(e) => {
+                    // transformer is changing scale of the node
+                    // and NOT its width or height
+                    // but in the store we have only width and height
+                    // to match the data better we will reset scale on transform end
+                    const node = shapeRef.current;
+                    const scaleX = node.scaleX();
+                    const scaleY = node.scaleY();
+
+                    // we will reset it back
+                    node.scaleX(1);
+                    node.scaleY(1);
+                    onChange({
+                        ...shapeProps,
+                        x: node.x(),
+                        y: node.y(),
+                        // set minimal value
+                        width: Math.max(5, node.width() * scaleX),
+                        height: Math.max(node.height() * scaleY),
+                    });
+                }}
+            />
+            {isSelected && (
+                <Transformer
+                    ref={trRef}
+                    boundBoxFunc={(oldBox, newBox) => {
+                        // limit resize
+                        if (newBox.width < 5 || newBox.height < 5) {
+                            return oldBox;
+                        }
+                        return newBox;
+                    }}
+                />
+            )}
+        </React.Fragment>
+    );
+};
+
+const initialRectangles = [
+    {
+        x: 10,
+        y: 10,
+        width: 100,
+        height: 100,
+        fill: 'red',
+        id: 'rect1',
+    },
+    {
+        x: 150,
+        y: 150,
+        width: 100,
+        height: 100,
+        fill: 'green',
+        id: 'rect2',
+    },
+];
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -232,6 +367,46 @@ const Home=props=>{
     setProblem(null)
   }
 
+    const [rectangles, setRectangles] = React.useState(initialRectangles);
+    const [selectedId, selectShape] = React.useState(null);
+
+    const checkDeselect = (e) => {
+        // deselect when clicked on empty area
+        const clickedOnEmpty = e.target === e.target.getStage();
+        if (clickedOnEmpty) {
+            selectShape(null);
+        }
+    };
+/*
+    return (
+        <Stage
+            width={500}
+            height={500}
+            onMouseDown={checkDeselect}
+            onTouchStart={checkDeselect}
+        >
+            <Layer>
+                {rectangles.map((rect, i) => {
+                    return (
+                        <Rectangle
+                            key={i}
+                            shapeProps={rect}
+                            isSelected={rect.id === selectedId}
+                            onSelect={() => {
+                                selectShape(rect.id);
+                            }}
+                            onChange={(newAttrs) => {
+                                const rects = rectangles.slice();
+                                rects[i] = newAttrs;
+                                setRectangles(rects);
+                            }}
+                        />
+                    );
+                })}
+            </Layer>
+        </Stage>
+    );
+*/
   return (
     <div className={classes.root}>
       <Snackbar
@@ -262,7 +437,6 @@ const Home=props=>{
         </Toolbar>
       </AppBar>
       <nav className={classes.drawer} aria-label="mailbox folders">
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden smUp implementation="css">
           <Drawer
             container={container}

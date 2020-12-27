@@ -123,6 +123,7 @@ const Problem=props=>{
       data['interactiveType']=parseInt(interactiveType)
       if(validateString(mdExplanation))data['explanation']=mdExplanation
       if(validateNumber(ansType))data['ansType']=ansType
+      //console.log(questionnaireRef.current.getData())
       if(interactiveType>1){
         if(questionnaireRef.current.getData()!=null)
           data['questionnaire']=JSON.stringify(questionnaireRef.current.getData())
@@ -400,7 +401,10 @@ const Problem=props=>{
                     <option value={0}>Specify Interactive Type</option>
                     <option value={1}>None</option>
                     <option value={2}>Exclusion Grid</option>
-                  </Select>
+                    <option value={3}>Drag and drop</option>
+                  <option value={4}>Grouping Containers</option>
+                  <option value={5}>Rearranging</option>
+                </Select>
                 {
                   interactiveType>0?(
                     interactiveType==1?(
@@ -441,7 +445,7 @@ const Problem=props=>{
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Solution Arena:
                       </Typography>
-                      <AnsType loaded={loaded} ref={solRef} questionnaire={questionnaireRef.current!=undefined?JSON.parse(JSON.stringify(questionnaireRef.current.getData())):null} ansType={ansType} data={props.data}/>
+                      <AnsType loaded={loaded} ref={solRef} questionnaire={questionnaireRef.current!=undefined?JSON.parse(JSON.stringify(questionnaireRef.current.getData())):null} ansType={ansType} interactiveType={interactiveType} data={props.data}/>
                       <Divider style={{marginTop:'10px'}}/>
                       <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
                         Explanation :
