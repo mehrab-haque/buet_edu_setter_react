@@ -3,6 +3,9 @@ import ExclusionQuestionnaire from './questionnaires/ExclusionQuestionnaire'
 import DragAndDropQuestionnaire from './questionnaires/DragAndDropQuestionnaire'
 import GroupingQuestionnaire from './questionnaires/GroupingQuestionnaire'
 import RearrangingQuestionnaire from './questionnaires/RearrangingQuestionnaire'
+import MatchStickQuestionnaire from './questionnaires/MatchsticksQuestionnaire'
+import VennQuestionnaire from './questionnaires/VennQuestionnaire'
+
 const Questionnaire=forwardRef((props,ref1)=>{
 
   var ref=useRef()
@@ -31,7 +34,15 @@ const Questionnaire=forwardRef((props,ref1)=>{
                     props.interactiveType==5?(
                         <RearrangingQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
                     ):(
-                        <div/>
+                        props.interactiveType==6?(
+                            <MatchStickQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
+                        ):(
+                            props.interactiveType==7?(
+                                <VennQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
+                            ):(
+                                <div/>
+                            )
+                        )
                     )
                 )
             )

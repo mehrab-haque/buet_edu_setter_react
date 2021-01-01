@@ -404,6 +404,8 @@ const Problem=props=>{
                     <option value={3}>Drag and drop</option>
                   <option value={4}>Grouping Containers</option>
                   <option value={5}>Rearranging</option>
+                  <option value={6}>Matchsticks</option>
+                  <option value={7}>Venn</option>
                 </Select>
                 {
                   interactiveType>0?(

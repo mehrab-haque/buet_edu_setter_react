@@ -4,6 +4,8 @@ import Text from './solutions/Text'
 import Exclusion from './interactives/Exclusion'
 import Grouping from './interactives/Grouping'
 import Rearranging from './interactives/Rearranging'
+import MatchStciks from "./interactives/Matchsticks";
+import Venn from './interactives/Venn'
 
 const AnsType=forwardRef((props,ref)=>{
 
@@ -38,7 +40,23 @@ const AnsType=forwardRef((props,ref)=>{
                     props.ansType==3 && props.questionnaire!=null  && props.interactiveType==5?(
                         <Rearranging ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==5?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
                     ):(
-                        <div/>
+                        props.ansType==3 && props.questionnaire!=null  && props.interactiveType==6?(
+                            <center>
+                                <div style={{width:'50%'}}>
+                                    <MatchStciks containerId='solution' ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==6?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
+                                </div>
+                            </center>
+                        ):(
+                            props.ansType==3 && props.questionnaire!=null  && props.interactiveType==7?(
+                                <center>
+                                    <div style={{width:'50%'}}>
+                                        <Venn containerId='solution' ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==7?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
+                                    </div>
+                                </center>
+                            ):(
+                                <div/>
+                            )
+                        )
                     )
                 )
             )
