@@ -21,9 +21,11 @@ const Venn=forwardRef((props,ref1)=>{
 
     useEffect(()=>{
         //console.log(props.data.sets)
-        var chart = venn.VennDiagram();
+        var chart = venn.VennDiagram()//.width(200).height(200);
         var div = d3.select('#'+props.containerId)
         div.datum(data.sets).call(chart);
+
+
 
         d3.selectAll("#"+props.containerId+" text")
             .style("fill", 'black')

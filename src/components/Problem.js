@@ -116,6 +116,7 @@ const Problem=props=>{
     if(validateString(cat))data['cat']=cat
     if(validateString(mdDescription))data['description']=mdDescription
     if(validateString(mdStatement))data['statement']=mdStatement
+    if(validateString(mdHint))data['hint']=mdHint
     if(validateString(restrictions))data['restrictions']=parseDetails(restrictions)
     if(validateString(tags))data['tags']=parseDetails(tags)
 
@@ -161,7 +162,7 @@ const Problem=props=>{
       data['uid']=firebase.auth().currentUser.uid
       data['draft']=false
       data['timestamp']=Date.now()
-      firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
+      firebase.firestore().collection('problem').doc(props.data.id).update(data).then(res=>{
         props.notify("Problem Uploaded Successfully")
         //props.update()
         props.close()
@@ -222,6 +223,7 @@ const Problem=props=>{
 
   const [mdDescription,setMdDescription]=useState('description' in props.data?props.data.description:'')
   const [mdStatement,setMdStatement]=useState('statement' in props.data?props.data.statement:'')
+  const [mdHint,setMdHint]=useState('hint' in props.data?props.data.hint:'')
   const [mdExplanation,setMdExplanation]=useState('explanation' in props.data?props.data.explanation:'')
 
   return(
@@ -368,6 +370,35 @@ const Problem=props=>{
               ]}
 
               />
+
+      <Divider style={{marginTop:'10px'}}/>
+      <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
+        Hint (Optional):
+      </Typography>
+
+      <MDEditor
+          value={mdHint}
+          onChange={setMdHint}
+          height='300'
+          commands={[
+            commands.title,
+            commands.bold,
+            commands.italic,
+            commands.strikethrough,
+            commands.hr,
+            commands.orderedListCommand,
+            commands.unorderedListCommand,
+            commands.code,
+            commands.image,
+            commands.link,
+            commands.quote,
+            commands.divider,
+            commands.codeEdit,
+            commands.codeLive,
+            commands.codePreview
+          ]}
+
+      />
 
               <Divider style={{marginTop:'10px'}}/>
 

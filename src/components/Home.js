@@ -29,14 +29,22 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import { deepOrange, deepPurple } from '@material-ui/core/colors';
+import DragAndDrop from './DragAndDrop'
 
 import { Stage, Layer, Rect, Transformer ,Image} from 'react-konva'
 import useImage from 'use-image';
+
+import S3FileUpload from "react-s3";
+
+import * as CryptoJS from 'crypto-js'
 
 
 
 import ProblemsList from './ProblemsList'
 import Problem from './Problem'
+
+import 'react-dropzone-uploader/dist/styles.css'
+import Dropzone from 'react-dropzone-uploader'
 
 const drawerWidth = 240;
 
@@ -47,6 +55,7 @@ class URLImage extends React.Component {
     componentDidMount() {
         this.loadImage();
     }
+
     componentDidUpdate(oldProps) {
         if (oldProps.src !== this.props.src) {
             this.loadImage();
@@ -337,6 +346,9 @@ const Home=props=>{
             </Button>
 
 
+              <FileUpload/>
+
+
           </center>
 
 
@@ -545,6 +557,101 @@ const Home=props=>{
       </main>
     </div>
   );
+}
+
+
+const FileUpload=()=>{
+
+    const [notification,setNotification]=useState(false)
+    const [message,setMessage]=useState('')
+
+    const notify=message=>{
+        setMessage(message)
+        setNotification(true)
+    }
+
+    const config = {
+        bucketName: 'buet-edu-1',
+        dirName: 'auto_upload/'+firebase.auth().currentUser.uid, /* optional */
+        region: 'ap-south-1',
+        accessKeyId: CryptoJS.AES.decrypt('U2FsdGVkX1+tfXJbXnK3t3PJJACKHSwoM/3QJTiWvWW0vvHIjgFDZWZ544X/S44+','henlo hooman').toString(CryptoJS.enc.Utf8),
+        secretAccessKey: CryptoJS.AES.decrypt('U2FsdGVkX190rIbWkA2KUF352Ezc4n+iDQSEwRwTSKVb0jqBnjj2ABFlY+6DD2MGXe8g0a6rf7u6nJKgLIeRew==','henlo hooman').toString(CryptoJS.enc.Utf8)
+    }
+
+    const upload=file=>{
+        //console.log(file)
+        //file.name=Date.now()+file.name.split('.')[file.name.split('.').length-1]
+        S3FileUpload.uploadFile(file,config).then(data=>{
+            notify(data.location)
+            navigator.clipboard.writeText(data.location)
+
+        }).catch(err=>{
+            console.log(err)
+        })
+    }
+
+    function renameFile(originalFile, newName) {
+        return new File([originalFile], newName, {
+            type: originalFile.type,
+            lastModified: originalFile.lastModified,
+        });
+    }
+
+    useEffect(()=>{
+        window.addEventListener("paste", function(thePasteEvent){
+            var items = thePasteEvent.clipboardData.items;
+            for (var i = 0; i < items.length; i++) {
+                // Skip content if not image
+                if (items[i].type.indexOf("image") == -1) continue;
+                // Retrieve image on clipboard as blob
+                var file = items[i].getAsFile();
+                upload(renameFile(file,Date.now()+'.'+file.name.split('.')[file.name.split('.').length-1]))
+                break;
+
+            }
+        }, false);
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            window.addEventListener(eventName, preventDefaults, false)
+        })
+
+        function preventDefaults (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+
+        window.addEventListener('drop', function handleDrop(e) {
+            e.preventDefault()
+            let dt = e.dataTransfer
+            let items = dt.files
+            for (var i = 0; i < items.length; i++) {
+                // Skip content if not image
+                if (items[i].type.indexOf("image") == -1) continue;
+                // Retrieve image on clipboard as blob
+                var file = items[i]
+                upload(renameFile(file,Date.now()+'.'+file.name.split('.')[file.name.split('.').length-1]))
+                break;
+
+            }
+        }, false)
+
+
+    },[])
+
+    return (
+        <React.Fragment>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+                open={notification}
+                onClose={()=>{setNotification(false)}}
+                autoHideDuration={4000}
+                message={message}
+            />
+        </React.Fragment>
+    )
 }
 
 export default Home
