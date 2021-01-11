@@ -1,4 +1,4 @@
-import React,{useState,useRef,useEffect} from 'react'
+import React, {useState, useRef, useEffect, forwardRef, useImperativeHandle, createRef} from 'react'
 import {Typography,Button,Divider,TextField,Select} from '@material-ui/core';
 import MDEditor,{commands} from '@uiw/react-md-editor';
 import * as firebase from 'firebase'
@@ -24,6 +24,8 @@ const Problem=props=>{
   const solRef=useRef()
 
   const questionnaireRef=useRef()
+
+    const hintRef=useRef()
 
   const [ansType,setAnsType]=useState('ansType' in props.data?props.data.ansType:0)
   const [language,setLanguage]=useState('language' in props.data?props.data.language:0)
@@ -116,9 +118,10 @@ const Problem=props=>{
     if(validateString(cat))data['cat']=cat
     if(validateString(mdDescription))data['description']=mdDescription
     if(validateString(mdStatement))data['statement']=mdStatement
-    if(validateString(mdHint))data['hint']=mdHint
     if(validateString(restrictions))data['restrictions']=parseDetails(restrictions)
     if(validateString(tags))data['tags']=parseDetails(tags)
+
+      if(hintRef.current.getData().length>0)data['hint']=hintRef.current.getData()
 
     if(validateNumber(interactiveType)){
       data['interactiveType']=parseInt(interactiveType)
@@ -223,8 +226,18 @@ const Problem=props=>{
 
   const [mdDescription,setMdDescription]=useState('description' in props.data?props.data.description:'')
   const [mdStatement,setMdStatement]=useState('statement' in props.data?props.data.statement:'')
-  const [mdHint,setMdHint]=useState('hint' in props.data?props.data.hint:'')
   const [mdExplanation,setMdExplanation]=useState('explanation' in props.data?props.data.explanation:'')
+
+    const [hintN,setHintN]=useState('hint' in props.data && Array.isArray(props.data.hint)?props.data.hint.length:0)
+
+
+    const handleHintN=event=>{
+        var val=parseInt(event.target.value)
+        if(validateNumber(val))
+            setHintN(val)
+        else
+            setHintN(0)
+    }
 
   return(
     <div>
@@ -372,33 +385,17 @@ const Problem=props=>{
               />
 
       <Divider style={{marginTop:'10px'}}/>
-      <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
-        Hint (Optional):
-      </Typography>
-
-      <MDEditor
-          value={mdHint}
-          onChange={setMdHint}
-          height='300'
-          commands={[
-            commands.title,
-            commands.bold,
-            commands.italic,
-            commands.strikethrough,
-            commands.hr,
-            commands.orderedListCommand,
-            commands.unorderedListCommand,
-            commands.code,
-            commands.image,
-            commands.link,
-            commands.quote,
-            commands.divider,
-            commands.codeEdit,
-            commands.codeLive,
-            commands.codePreview
-          ]}
-
-      />
+        <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
+            Hint (Optional):
+        </Typography>
+        <TextField
+            type='number'
+            variant='outlined'
+            value={hintN}
+            label='n(hints)'
+            style={{width:'10%',marginLeft:'1%'}}
+            onChange={handleHintN}/>
+      <Hint ref={hintRef} n={hintN} data={props.data}/>
 
               <Divider style={{marginTop:'10px'}}/>
 
@@ -516,5 +513,80 @@ const Problem=props=>{
     </div>
   )
 }
+
+const Hint=forwardRef((props,ref)=>{
+
+
+    var hints=[]
+    if('hint' in props.data && Array.isArray(props.data.hint))
+        props.data.hint.map(hint=>{
+            hints.push(hint)
+        })
+
+    const [data,setData]=useState(hints)
+
+    var hintRefs=[]
+
+    Array(props.n).fill().map((_, i) => {
+        hintRefs.push(createRef())
+    })
+
+    const setHint=(hint,index)=>{
+        var tmp=data
+        tmp[index]=hint
+        setData(tmp)
+    }
+
+    useImperativeHandle(ref, () => ({
+        getData(){
+            var out=[]
+            data.map(hint=>{
+                if(hint.length>0)
+                    out.push(hint)
+            })
+            return out
+        }
+    }));
+
+    return(
+        <div>
+            {
+                Array(props.n).fill().map((_,i)=>{
+                    return (
+                        <div>
+                            <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
+                                Hint - {(i+1)} :
+                            </Typography>
+                            <MDEditor
+                                value={i<data.length?data[i]:''}
+                                onChange={hint=>{setHint(hint,i)}}
+                                height='300'
+                                style={{marginTop:'10px'}}
+                                commands={[
+                                    commands.title,
+                                    commands.bold,
+                                    commands.italic,
+                                    commands.strikethrough,
+                                    commands.hr,
+                                    commands.orderedListCommand,
+                                    commands.unorderedListCommand,
+                                    commands.code,
+                                    commands.image,
+                                    commands.link,
+                                    commands.quote,
+                                    commands.divider,
+                                    commands.codeEdit,
+                                    commands.codeLive,
+                                    commands.codePreview
+                                ]}
+                            />
+                        </div>
+                    )
+                })
+            }
+        </div>
+
+    )
+})
 
 export default Problem
