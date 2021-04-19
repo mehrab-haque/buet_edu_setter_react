@@ -6,6 +6,7 @@ import Grouping from './interactives/Grouping'
 import Rearranging from './interactives/Rearranging'
 import MatchStciks from "./interactives/Matchsticks";
 import Venn from './interactives/Venn'
+import DragAndDropGrid from "./interactives/DragAndDropGrid";
 
 const AnsType=forwardRef((props,ref)=>{
 
@@ -54,7 +55,13 @@ const AnsType=forwardRef((props,ref)=>{
                                     </div>
                                 </center>
                             ):(
-                                <div/>
+                                props.ansType==3 && props.questionnaire!=null  && props.interactiveType==8?(
+                                    <center>
+                                        <DragAndDropGrid ref={solRef} data={'answer' in props.data && props.data.ansType==3 && props.data.interactiveType==8?(JSON.stringify(props.questionnaire)==props.data.questionnaire?JSON.parse(props.data.answer):props.questionnaire):props.questionnaire}/>
+                                    </center>
+                                ):(
+                                    <div/>
+                                )
                             )
                         )
                     )

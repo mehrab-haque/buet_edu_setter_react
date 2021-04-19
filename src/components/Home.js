@@ -582,12 +582,11 @@ const FileUpload=()=>{
         //console.log(file)
         //file.name=Date.now()+file.name.split('.')[file.name.split('.').length-1]
         S3FileUpload.uploadFile(file,config).then(data=>{
-            notify(data.location)
-            navigator.clipboard.writeText(data.location)
-
-        }).catch(err=>{
-            console.log(err)
-        })
+                notify(data.location)
+                navigator.clipboard.writeText(data.location)
+            }).catch(err=>{
+                console.log(err)
+            })
     }
 
     function renameFile(originalFile, newName) {

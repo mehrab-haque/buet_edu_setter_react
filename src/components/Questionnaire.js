@@ -5,6 +5,7 @@ import GroupingQuestionnaire from './questionnaires/GroupingQuestionnaire'
 import RearrangingQuestionnaire from './questionnaires/RearrangingQuestionnaire'
 import MatchStickQuestionnaire from './questionnaires/MatchsticksQuestionnaire'
 import VennQuestionnaire from './questionnaires/VennQuestionnaire'
+import DragAndDropGridQuestionnaire from './questionnaires/DragAndDropGridQuestionnaire'
 
 const Questionnaire=forwardRef((props,ref1)=>{
 
@@ -40,7 +41,11 @@ const Questionnaire=forwardRef((props,ref1)=>{
                             props.interactiveType==7?(
                                 <VennQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
                             ):(
-                                <div/>
+                                props.interactiveType==8?(
+                                    <DragAndDropGridQuestionnaire questionnaire={props.questionnaire} ref={ref}/>
+                                ):(
+                                    <div/>
+                                )
                             )
                         )
                     )

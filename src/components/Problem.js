@@ -150,7 +150,7 @@ const Problem=props=>{
 
   const saveDraft=()=>{
     var data=getData()
-    data['uid']=firebase.auth().currentUser.uid
+    data['uid']=props.data.uid
     data['draft']=true
     data['timestamp']=Date.now()
     firebase.firestore().collection('problem').doc(props.data.id).set(data).then(res=>{
@@ -162,9 +162,10 @@ const Problem=props=>{
   const submit=()=>{
     if(validate()){
       var data=getData()
-      data['uid']=firebase.auth().currentUser.uid
+      data['uid']=props.data.uid
       data['draft']=false
       data['timestamp']=Date.now()
+        data['isPending']=true
       firebase.firestore().collection('problem').doc(props.data.id).update(data).then(res=>{
         props.notify("Problem Uploaded Successfully")
         //props.update()
@@ -253,7 +254,7 @@ const Problem=props=>{
         style={{width:'24%',marginLeft:'1%'}}
         variant='outlined'
         onClick={submit}
-        disabled={props.data.uid!=firebase.auth().currentUser.uid}
+        disabled={false/*props.data.uid!=firebase.auth().currentUser.uid*/}
         color='primary'>
         Submit
       </Button>
@@ -434,6 +435,7 @@ const Problem=props=>{
                   <option value={5}>Rearranging</option>
                   <option value={6}>Matchsticks</option>
                   <option value={7}>Venn</option>
+                    <option value={8}>Drag and drop grid</option>
                 </Select>
                 {
                   interactiveType>0?(

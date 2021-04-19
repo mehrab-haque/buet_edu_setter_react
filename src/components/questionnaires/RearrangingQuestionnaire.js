@@ -2,6 +2,7 @@ import React,{useState,createRef,useRef,useEffect,forwardRef, useImperativeHandl
 import {TextField,Button,Divider,Typography} from '@material-ui/core';
 import Rearranging from '../interactives/Rearranging'
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 const RearrangingQuestionnaire=forwardRef((props,ref)=>{
 
@@ -28,9 +29,16 @@ const RearrangingQuestionnaire=forwardRef((props,ref)=>{
             setN(0)
     }
 
+    const horizontalRef=useRef()
+
     useImperativeHandle(ref, () => ({
         getData(){
-            return groupRef.current!=undefined?groupRef.current.getData():null
+            if(groupRef.current!=undefined){
+                var d=groupRef.current.getData()
+                d['horizontal']=horizontalRef.current.checked
+                return d
+            }else
+                return null
         },
         isValid(){
             return data!=null && data!=undefined
@@ -61,6 +69,7 @@ const RearrangingQuestionnaire=forwardRef((props,ref)=>{
                     <div/>
                 )
             }
+
             <TextField
                 type='number'
                 variant='outlined'
@@ -68,6 +77,16 @@ const RearrangingQuestionnaire=forwardRef((props,ref)=>{
                 label='n(items)'
                 style={{width:'10%',marginLeft:'1%'}}
                 onChange={handleN}/>
+
+            <FormControlLabel
+                style={{width:'15%',marginLeft:'1%'}}
+                inputRef={horizontalRef}
+                value="top"
+                control={<Switch defaultChecked={data!=null && data!=undefined && 'horizontal' in data && data.horizontal===true}  color="primary"/>}
+                label="horizontal ?"
+                labelPlacement="bottom"
+
+            />
             <br/><br/>
             <RearrangingFields load={load} n={n} data={data}/>
         </div>
