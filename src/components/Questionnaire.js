@@ -13,6 +13,8 @@ const Questionnaire=forwardRef((props,ref1)=>{
 
   useImperativeHandle(ref1, () => ({
     getData(){
+    console.log('hennnnnnlo')
+    console.log(ref.current.getData())
       return ref.current.getData()
     },
     isValid(){

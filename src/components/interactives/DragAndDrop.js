@@ -91,7 +91,6 @@ class URLImage extends React.Component {
                     ref={node => {
                         this.imageNode = node;
                     }}
-
                     rotation={this.props.rotation}
                     onDragEnd={this.dragEnd}
                     onDragStart={this.dragStart}

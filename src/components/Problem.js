@@ -240,6 +240,25 @@ const Problem=props=>{
             setHintN(0)
     }
 
+
+    useEffect(()=>{
+        var str=mdDescription
+        str=str.replace("**","__")
+        setMdDescription(str)
+    },[mdDescription])
+
+    useEffect(()=>{
+        var str=mdStatement
+        str=str.replace("**","__")
+        setMdStatement(str)
+    },[mdStatement])
+
+    useEffect(()=>{
+        var str=mdExplanation
+        str=str.replace("**","__")
+        setMdExplanation(str)
+    },[mdExplanation])
+
   return(
     <div>
       <Button
