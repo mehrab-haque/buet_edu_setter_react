@@ -4,6 +4,9 @@ import MDEditor,{commands} from '@uiw/react-md-editor';
 import * as firebase from 'firebase'
 import AnsType from './AnsType'
 import Questionnaire from './Questionnaire'
+import Latex from "react-latex";
+import Grid from "@material-ui/core/Grid";
+import {MathJax, MathJaxContext} from "better-react-mathjax";
 
 const languages=[
   'English',
@@ -18,6 +21,12 @@ const Problem=props=>{
   const catRef=useRef()
   const restrictionsRef=useRef()
   const tagsRef=useRef()
+
+    const [latex,setLatex]=useState('latex' in props.data?props.data.latex:'')
+
+    const handleLatexChange=e=>{
+      setLatex(e.target.value)
+    }
 
   const [loaded,setLoaded]=useState(false)
 
@@ -120,6 +129,8 @@ const Problem=props=>{
     if(validateString(mdStatement))data['statement']=mdStatement
     if(validateString(restrictions))data['restrictions']=parseDetails(restrictions)
     if(validateString(tags))data['tags']=parseDetails(tags)
+
+      data['latex']=latex
 
       if(hintRef.current.getData().length>0)data['hint']=hintRef.current.getData()
 
@@ -353,6 +364,7 @@ const Problem=props=>{
             Problem Description (Optional but recommended):
           </Typography>
           <MDEditor
+
             value={mdDescription}
             onChange={setMdDescription}
             height='300'
@@ -375,6 +387,34 @@ const Problem=props=>{
             ]}
 
             />
+
+        <Divider style={{marginTop:'10px'}}/>
+        <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
+            LaTeX Description (Optional but recommended):
+        </Typography>
+
+        <Grid container spacing={1}>
+            <Grid item xs={6}>
+                <TextField
+                    multiline
+                    rows={16}
+                    value={latex}
+                    onChange={handleLatexChange}
+                    fullWidth
+                    variant={'outlined'}
+                    />
+            </Grid>
+            <Grid item xs={6}>
+                <MathJaxContext>
+                    <MathJax>{latex}</MathJax>
+                </MathJaxContext>
+                {/*<Latex>{latex}</Latex>*/}
+            </Grid>
+        </Grid>
+
+
+
+
 
             <Divider style={{marginTop:'10px'}}/>
             <Typography style={{marginTop:'10px',marginBottom:'10px'}} variant="body2">
