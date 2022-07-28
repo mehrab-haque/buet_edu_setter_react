@@ -1,0 +1,1 @@
+(this.webpackJsonpbuet_edu_setter=this.webpackJsonpbuet_edu_setter||[]).push([[180],{482:function(t,e){Prism.languages.ini={comment:/^[ \t]*[;#].*$/m,selector:/^[ \t]*\[.*?\]/m,constant:/^[ \t]*[^\s=]+?(?=[ \t]*=)/m,"attr-value":{pattern:/=.*/,inside:{punctuation:/^[=]/}}}}}]);

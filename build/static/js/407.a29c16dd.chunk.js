@@ -1,0 +1,1 @@
+(this.webpackJsonpbuet_edu_setter=this.webpackJsonpbuet_edu_setter||[]).push([[407],{709:function(e,s){var t=Prism.util.clone(Prism.languages.typescript);Prism.languages.tsx=Prism.languages.extend("jsx",t)}}]);

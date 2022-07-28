@@ -1,0 +1,1 @@
+(this.webpackJsonpbuet_edu_setter=this.webpackJsonpbuet_edu_setter||[]).push([[132],{434:function(e,t){Prism.languages.gcode={comment:/;.*|\B\(.*?\)\B/,string:{pattern:/"(?:""|[^"])*"/,greedy:!0},keyword:/\b[GM]\d+(?:\.\d+)?\b/,property:/\b[A-Z]/,checksum:{pattern:/\*\d+/,alias:"punctuation"},punctuation:/:/}}}]);
