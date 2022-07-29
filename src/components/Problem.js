@@ -74,10 +74,10 @@ const Problem=props=>{
       window.alert('error : grade')
       return false
     }
-    if(!validateNumber(difficulty)){
-      window.alert('error : difficulty')
-      return false
-    }
+    // if(!validateNumber(difficulty)){
+    //   window.alert('error : difficulty')
+    //   return false
+    // }
     if(!validateNumber(language)){
       window.alert('error : language')
       return false
@@ -122,7 +122,7 @@ const Problem=props=>{
     if(validateString(title))data['title']=title
     if(validateString(logo))data['logo']=logo
     if(validateNumber(grade))data['grade']=grade
-    if(validateNumber(difficulty))data['difficulty']=parseInt(difficulty)
+    //if(validateNumber(difficulty))data['difficulty']=parseInt(difficulty)
     if(validateNumber(language))data['language']=parseInt(language)
     if(validateString(cat))data['cat']=cat
     if(validateString(mdDescription))data['description']=mdDescription
