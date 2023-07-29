@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "@types/react-latex": "^2.0.0",
     "@uiw/react-md-editor": "^1.14.5",
+    "axios": "^1.4.0",
     "better-react-mathjax": "^2.0.1",
     "crypto-js": "^4.0.0",
     "d3": "^6.3.1",

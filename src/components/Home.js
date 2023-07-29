@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Paper from '@material-ui/core/Paper';
+import axios from 'axios'
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Button from '@material-ui/core/Button';
@@ -560,6 +561,17 @@ const Home=props=>{
 }
 
 
+function getBase64(file, cb) {
+    let reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+        cb(reader.result)
+    };
+    reader.onerror = function (error) {
+        console.log('Error: ', error);
+    };
+}
+
 const FileUpload=()=>{
 
     const [notification,setNotification]=useState(false)
@@ -578,15 +590,26 @@ const FileUpload=()=>{
         secretAccessKey: CryptoJS.AES.decrypt('U2FsdGVkX190rIbWkA2KUF352Ezc4n+iDQSEwRwTSKVb0jqBnjj2ABFlY+6DD2MGXe8g0a6rf7u6nJKgLIeRew==','henlo hooman').toString(CryptoJS.enc.Utf8)
     }
 
-    const upload=file=>{
+    const upload=async file=>{
         //console.log(file)
         //file.name=Date.now()+file.name.split('.')[file.name.split('.').length-1]
-        S3FileUpload.uploadFile(file,config).then(data=>{
-                notify(data.location)
-                navigator.clipboard.writeText(data.location)
-            }).catch(err=>{
-                console.log(err)
-            })
+
+        getBase64(file, async (result) => {
+          var res= await axios.post('https://brainlytic.org/upload',{
+            base64:result
+          }).then(res=>{
+            notify(res.data.location)
+            navigator.clipboard.writeText(res.data.location)
+          })
+      });
+
+
+        // S3FileUpload.uploadFile(file,config).then(data=>{
+        //         notify(data.location)
+        //         navigator.clipboard.writeText(data.location)
+        //     }).catch(err=>{
+        //         console.log(err)
+        //     })
     }
 
     function renameFile(originalFile, newName) {
